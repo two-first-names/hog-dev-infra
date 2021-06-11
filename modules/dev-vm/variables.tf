@@ -3,9 +3,6 @@ variable "instance_type" {
 }
 
 variable "name" {}
-variable "subnet_id" {
-
-}
-variable "vpc_id" {
-
-}
+variable "subnet_id" {}
+variable "vpc_id" {}
+variable "ssh_public_key" {}

@@ -13,10 +13,16 @@ resource "aws_ebs_volume" "dev" {
   size              = 30
 }
 
+resource "aws_key_pair" "dev" {
+  key_name   = "${var.name}_dev_vm"
+  public_key = var.ssh_public_key
+}
+
 resource "aws_instance" "dev" {
   ami           = data.aws_ami.latest.id
   instance_type = var.instance_type
   subnet_id     = var.subnet_id
+  key_name      = aws_key_pair.dev.key_name
 
   security_groups = [aws_security_group.sg.id]
 
@@ -98,6 +104,42 @@ data "aws_iam_policy_document" "dev" {
     resources = [
       "*",
     ]
+  }
+
+  statement {
+    sid = "DenyPushToMain"
+
+    effect = "Deny"
+
+    actions = [
+      "codecommit:GitPush",
+      "codecommit:DeleteBranch",
+      "codecommit:PutFile",
+      "codecommit:MergeBranchesByFastForward",
+      "codecommit:MergeBranchesBySquash",
+      "codecommit:MergeBranchesByThreeWay",
+      "codecommit:MergePullRequestByFastForward",
+      "codecommit:MergePullRequestBySquash",
+      "codecommit:MergePullRequestByThreeWay"
+    ]
+
+    resources = ["*"]
+
+    condition {
+      test     = "StringEqualsIfExists"
+      variable = "codecommit:References"
+
+      values = [
+        "refs/heads/main"
+      ]
+    }
+
+    condition {
+      test     = "Null"
+      variable = "codecommit:References"
+
+      values = ["false"]
+    }
   }
 }
 
