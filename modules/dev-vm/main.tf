@@ -13,16 +13,10 @@ resource "aws_ebs_volume" "dev" {
   size              = 30
 }
 
-resource "aws_key_pair" "dev" {
-  key_name   = "${var.name}_dev_vm"
-  public_key = var.ssh_public_key
-}
-
 resource "aws_instance" "dev" {
   ami           = data.aws_ami.latest.id
   instance_type = var.instance_type
   subnet_id     = var.subnet_id
-  key_name      = aws_key_pair.dev.key_name
 
   security_groups = [aws_security_group.sg.id]
 
